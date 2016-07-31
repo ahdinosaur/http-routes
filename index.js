@@ -1,23 +1,26 @@
 const serverRouter = require('server-router')
 const extend = require('xtend')
 
-const routeNotFound = 'routeNotFound'
+const NAMESPACE = 'http-routes__'
+const NOT_FOUND = NAMESPACE + 'notFound'
 
 module.exports = Routes
 
-function Routes (...routes) {
-  if (typeof routes[0] === 'string') {
-    routes = [[routes[0], routes[1]]]
+function Routes (routes) {
+  if (typeof arguments[0] === 'string') {
+    return Routes([arguments[0], arguments[1]])
+  } else if (arguments[0].length == 2 && typeof arguments[0][0] === 'string') {
+    return Routes([arguments[0]])
   }
 
-  var router = serverRouter(routeNotFound, { wrap })
+  var router = serverRouter(NOT_FOUND, { wrap })
 
   routes.forEach(route => {
     const [path, cbs] = route
     router.on(path, cbs)
   })
 
-  router.on(routeNotFound, (req, res, next) => { next() })
+  router.on(NOT_FOUND, (req, res, next) => { next() })
 
   return router
 }

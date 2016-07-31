@@ -1,14 +1,64 @@
 # http-routes
 
-functional http router
+functional http router using [`wayfarer`](https://github.com/yoshuawuyts)
 
 ```shell
 npm install --save http-routes
 ```
 
+## example
+
+```js
+const Server = require('http').createServer
+const Stack = require('stack')
+const Cookie = require('cookie')
+const Route = require('http-routes')
+
+const auth = Stack(
+  Route([
+    // login and set cookies
+    ['login/:id', function login (req, res, next) {
+      this.id = req.params.id
+      res.setHeader('Set-Cookie', Cookie.serialize('id', this.id))
+      res.setHeader('Location', '/') // redirect to the home page.
+      res.statusCode = 303
+      res.end()
+    }],
+    // logout and clear cookies
+    ['logout', function logout (req, res, next) {
+      res.setHeader('Set-Cookie', Cookie.serialize('id', ''))
+      res.setHeader('Location', '/login') // redirect to the login page.
+      res.statusCode = 303
+      res.end()
+    }]
+  ]),
+  // check cookies, and authorize this connection (or not)
+  function authorize (req, res, next) {
+    this.id = Cookie.parse(req.headers.cookie).id
+    next()
+  },
+  // return list of the current access rights. (for debugging)
+  Route('whoami', function whoami (req, res, next) {
+    res.end(JSON.stringify(this.id) + '\n')
+  })
+)
+
+Server(auth).listen(5000)
+```
+
 ## usage
 
-### `httpRoutes = require('http-routes')`
+### `Route = require('http-routes')`
+
+### `handler = Route(path, routeHandler(s))`
+### `handler = Route([path, routeHandler(s)])`
+### `handler = Route([[path, routeHandler(s)], ...])`
+
+where `path` is an Express-style path for [`wayfarer`](https://github.com/yoshuawuyts)
+
+and `routeHandler` is a function of shape `(req, res, next) => { next() }`
+
+and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions
 
 ## license
 
