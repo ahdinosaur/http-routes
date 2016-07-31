@@ -1,0 +1,30 @@
+{
+  "name": "http-routes",
+  "version": "0.0.0",
+  "description": "functional http router",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape test.js",
+    "start": "node-dev example"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahdinosaur/http-routes.git"
+  },
+  "keywords": [],
+  "author": "Mikey <michael.williams@enspiral.com> (http://dinosaur.is)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/ahdinosaur/http-routes/issues"
+  },
+  "homepage": "https://github.com/ahdinosaur/http-routes#readme",
+  "devDependencies": {
+    "node-dev": "^3.1.0",
+    "npm-run-all": "^1.6.0",
+    "tape": "^4.5.1"
+  },
+  "dependencies": {
+    "server-router": "^2.1.0",
+    "xtend": "^4.0.1"
+  }
+}
