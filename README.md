@@ -14,11 +14,10 @@ const Stack = require('stack')
 const Cookie = require('cookie')
 const Route = require('http-routes')
 
-const auth = Stack(
+const auth = [
   Route([
     // login and set cookies
     ['login/:id', function login (req, res, next) {
-      this.id = req.params.id
       res.setHeader('Set-Cookie', Cookie.serialize('id', this.id))
       res.setHeader('Location', '/') // redirect to the home page.
       res.statusCode = 303
@@ -41,9 +40,12 @@ const auth = Stack(
   Route('whoami', function whoami (req, res, next) {
     res.end(JSON.stringify(this.id) + '\n')
   })
-)
+]
 
-Server(auth).listen(5000)
+var context = { id: null }
+const stack = Stack(...auth.map(fn => fn.bind(context)))
+
+Server(stack).listen(5000)
 ```
 
 ## usage
