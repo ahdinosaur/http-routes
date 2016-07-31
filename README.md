@@ -3,7 +3,7 @@
 functional http router using [`wayfarer`](https://github.com/yoshuawuyts)
 
 ```shell
-npm install --save http-routes
+npm install --save ahdinosaur/http-routes
 ```
 
 ## example
