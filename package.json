@@ -24,7 +24,7 @@
     "tape": "^4.5.1"
   },
   "dependencies": {
-    "server-router": "^2.1.0",
+    "server-router": "github:ahdinosaur/server-router#this-context",
     "xtend": "^4.0.1"
   }
 }
