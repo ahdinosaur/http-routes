@@ -27,6 +27,6 @@ function Routes (routes) {
 
 function wrap (handler) {
   return function (req, res, params, next) {
-    handler.call(this, extend(req, { params }), res, next)
+    handler(extend(req, { params }), res, next)
   }
 }
