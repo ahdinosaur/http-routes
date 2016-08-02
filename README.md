@@ -1,9 +1,9 @@
 # http-routes
 
-functional http router using [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
+functional http router using [`stack`](https://github.com/creationix/stack) and [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
 ```shell
-npm install --save ahdinosaur/http-routes
+npm install --save http-routes
 ```
 
 ## example
@@ -12,19 +12,19 @@ npm install --save ahdinosaur/http-routes
 const Server = require('http').createServer
 const Stack = require('stack')
 const Cookie = require('cookie')
-const Route = require('./')
+const Route = require('http-routes')
 
-const stack = Stack(
+const route = Route([
   Route([
     // login and set cookies
-    ['login/:id', function login (req, res, next) {
+    ['/login/:id', function login (req, res, next) {
       res.setHeader('Set-Cookie', Cookie.serialize('id', req.params.id, { path: '/' }))
       res.setHeader('Location', '/whoami') // redirect to the whoami page.
       res.statusCode = 303
       res.end()
     }],
     // logout and clear cookies
-    ['login', {
+    ['/login', {
       get: function view (req, res, next) {
         const newId = Math.random().toString(8).substring(2)
         const html = `<a href='/login/${newId}'>login!</a>`
@@ -32,12 +32,12 @@ const stack = Stack(
         res.end(html)
       },
     }],
-    ['logout', function logout (req, res, next) {
+    Route(['/logout', function logout (req, res, next) {
       res.setHeader('Set-Cookie', Cookie.serialize('id', '', { path: '/' }))
       res.setHeader('Location', '/whoami') // redirect to the whoami page
       res.statusCode = 303
       res.end()
-    }]
+    }])
   ]),
   // check cookies, and authorize this connection (or not)
   function authorize (req, res, next) {
@@ -45,12 +45,12 @@ const stack = Stack(
     next()
   },
   // return list of the current access rights. (for debugging)
-  Route('whoami', function whoami (req, res, next) {
+  Route('/whoami', function whoami (req, res, next) {
     res.end(JSON.stringify(req.id) + '\n')
   })
-)
+])
 
-Server(stack).listen(5000)
+Server(Stack(route)).listen(5000)
 ```
 
 ## usage
@@ -63,9 +63,9 @@ Server(stack).listen(5000)
 
 where `path` is an Express-style path for [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
-and `routeHandler` is a function of shape `(req, res, next) => { next() }`
+and `routeHandler` is a function of shape `(req, res, next) => { next() }` for [`stack`](https://github.com/creationix/stack)
 
-and `routeHandlers` is an object mapping lowercase [http method names](https://www.npmjs.com/package/methods) to route handler functions
+and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions
 
 ## license
 
