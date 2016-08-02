@@ -1,6 +1,7 @@
 const compose = require('stack').compose
 const extend = require('xtend')
 const pathToRegexp = require('path-to-regexp')
+const zipObject = require('zip-object')
 
 module.exports = Routes
 
@@ -42,17 +43,10 @@ function mount (path, handler) {
   return function (req, res, next) {
     const matches = query.exec(req.url)
     if (matches === null) return next()
-    const params = paramify(keys, matches.slice(1))
+    const keyNames = keys.map(key => key.name)
+    const params = zipObject(keyNames, matches.slice(1))
     const nextUrl = req.url.substring(matches[0].length)
     const nextReq = extend(req, { url: nextUrl, params })
     handler(nextReq, res, next)
   }
-}
-
-function paramify (keys, values) {
-  return keys.reduce((sofar, key, index) => {
-    const match = values[index]
-    sofar[key.name] = match
-    return sofar
-  }, {})
 }
