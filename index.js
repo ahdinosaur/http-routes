@@ -6,39 +6,45 @@ module.exports = Routes
 
 function Routes (routes) {
   if (typeof arguments[0] === 'string') {
-    return Routes([arguments[0], arguments[1]])
+    return Routes([[arguments[0], arguments[1]]])
   } else if (arguments[0].length == 2 && typeof arguments[0][0] === 'string') {
     return Routes([arguments[0]])
   }
 
   return compose(...routes.map(route => {
+    if (typeof route === 'function') return route
     const [path, handler] = route
-    return mount(path, methodify(handler))
+    return mount(path, byMethod(handler))
   }))
 }
 
-function methodify (handler) {
+function byMethod (handler) {
+  const methodNames = Object.keys(handler)
   return typeof handler === 'function'
-    ? function get (req, res, next) {
-      if (req.method !== 'GET') next()
-      else handler(req, res, next)
-    } : function byMethod (req, res, next) {
-      const methodName = req.method.toLowerCase()
-      const method = handler[methodName]
-      if (method == null) next()
-      else method(req, res, next)
-    }
+    ? ifMethod(handler, 'get')
+    : compose(...methodNames.map(methodName => {
+      return ifMethod(handler[methodName], methodName)
+    }))
+}
+
+function ifMethod (handler, methodName) {
+  var METHOD = methodName.toUpperCase()
+  return function (req, res, next) {
+    if (req.method !== METHOD) next()
+    else handler(req, res, next)
+  }
 }
 
 function mount (path, handler) {
   var keys = []
   const query = pathToRegexp(path, keys)
   return function (req, res, next) {
-    const url = normalizeUrl(req.url)
-    const matches = query.exec(url)
+    const matches = query.exec(req.url)
     if (matches === null) return next()
     const params = paramify(keys, matches.slice(1))
-    handler(extend(req, { params }), res, next)
+    const nextUrl = req.url.substring(matches[0].length)
+    const nextReq = extend(req, { url: nextUrl, params })
+    handler(nextReq, res, next)
   }
 }
 
@@ -48,10 +54,6 @@ function paramify (keys, values) {
     sofar[key.name] = match
     return sofar
   }, {})
-}
-
-function normalizeUrl (path) {
-  return (path || '').replace(/^\//, '')
 }
 
 function none (req, res, next) { next() }
