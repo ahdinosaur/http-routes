@@ -63,9 +63,11 @@ Server(Stack(route)).listen(5000)
 
 where `path` is an Express-style path for [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
-and `routeHandler` is a function of shape `(req, res, next) => { next() }` for [`stack`](https://github.com/creationix/stack)
+and `handler` is a function of shape `(req, res, next) => { next() }` for [`stack`](https://github.com/creationix/stack)
 
-and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions
+and `routeHandler` is a handler where `req.params` is an object of path matches and `req.url` is substring of original url after path match
+
+and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions.
 
 ## license
 
