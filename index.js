@@ -1,4 +1,4 @@
-const { compose } = require('stack')
+const compose = require('stack').compose
 const extend = require('xtend')
 const pathToRegexp = require('path-to-regexp')
 
@@ -11,9 +11,10 @@ function Routes (routes) {
     return Routes([arguments[0]])
   }
 
-  return compose(...routes.map(route => {
+  return compose.apply(null, routes.map(route => {
     if (typeof route === 'function') return route
-    const [path, handler] = route
+    const path = route[0]
+    const handler = route[1]
     return mount(path, byMethod(handler))
   }))
 }
@@ -22,7 +23,7 @@ function byMethod (handler) {
   const methodNames = Object.keys(handler)
   return typeof handler === 'function'
     ? ifMethod(handler, 'get')
-    : compose(...methodNames.map(methodName => {
+    : compose.apply(null, methodNames.map(methodName => {
       return ifMethod(handler[methodName], methodName)
     }))
 }
@@ -55,5 +56,3 @@ function paramify (keys, values) {
     return sofar
   }, {})
 }
-
-function none (req, res, next) { next() }
