@@ -1,6 +1,6 @@
 # http-routes
 
-functional http router using [`wayfarer`](https://github.com/yoshuawuyts)
+functional http router using [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
 ```shell
 npm install --save ahdinosaur/http-routes
@@ -61,11 +61,11 @@ Server(stack).listen(5000)
 ### `handler = Route([path, routeHandler(s)])`
 ### `handler = Route([[path, routeHandler(s)], ...])`
 
-where `path` is an Express-style path for [`wayfarer`](https://github.com/yoshuawuyts)
+where `path` is an Express-style path for [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
 and `routeHandler` is a function of shape `(req, res, next) => { next() }`
 
-and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions
+and `routeHandlers` is an object mapping lowercase [http method names](https://www.npmjs.com/package/methods) to route handler functions
 
 ## license
 

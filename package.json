@@ -26,6 +26,7 @@
     "tape": "^4.5.1"
   },
   "dependencies": {
+    "path-to-regexp": "^1.5.3",
     "server-router": "^2.1.0",
     "xtend": "^4.0.1"
   }
