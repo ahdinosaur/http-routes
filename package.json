@@ -19,8 +19,10 @@
   },
   "homepage": "https://github.com/ahdinosaur/http-routes#readme",
   "devDependencies": {
+    "cookie": "^0.3.1",
     "node-dev": "^3.1.0",
     "npm-run-all": "^1.6.0",
+    "stack": "^0.1.0",
     "tape": "^4.5.1"
   },
   "dependencies": {
