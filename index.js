@@ -15,17 +15,30 @@ function Routes (routes) {
 
   var router = serverRouter(NOT_FOUND, { wrap })
 
-  routes.forEach(route => {
-    const [path, cbs] = route
-    router.on(path, cbs)
+  routes.forEach(function (route) {
+    router.on(route[0], route[1])
   })
 
-  router.on(NOT_FOUND, (req, res, next) => { next() })
+  router.on(NOT_FOUND, function (req, res, next) { next() })
 
   return router
 }
 
 function wrap (handler) {
+  return typeof handler === 'function'
+    ? wrapFunction(handler)
+    : wrapObject(handler)
+}
+
+function wrapObject (handler) {
+  return Object.keys(handler)
+  .reduce(function (sofar, key) {
+    sofar[key] = wrapFunction(handler[key])
+    return sofar
+  }, {})
+}
+
+function wrapFunction (handler) {
   return function (req, res, params, next) {
     handler(extend(req, { params }), res, next)
   }
