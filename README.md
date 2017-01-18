@@ -1,6 +1,6 @@
 # http-routes
 
-functional http router using [`stack`](https://github.com/creationix/stack) and [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
+functional http router using [`http-compose`](https://github.com/ahdinosaur/http-compose) and [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
 ```shell
 npm install --save http-routes
@@ -10,29 +10,28 @@ npm install --save http-routes
 
 ```js
 const Server = require('http').createServer
-const Stack = require('stack')
 const Cookie = require('cookie')
 const Route = require('http-routes')
 
-const route = Route([
+const routeHandler = Route([
   Route([
     // login and set cookies
-    ['/login/:id', function login (req, res, next) {
-      res.setHeader('Set-Cookie', Cookie.serialize('id', req.params.id, { path: '/' }))
+    ['/login/:id', function login (req, res, context, next) {
+      res.setHeader('Set-Cookie', Cookie.serialize('id', context.params.id, { path: '/' }))
       res.setHeader('Location', '/whoami') // redirect to the whoami page.
       res.statusCode = 303
       res.end()
     }],
     // logout and clear cookies
     ['/login', {
-      get: function view (req, res, next) {
+      get: function view (req, res, context, next) {
         const newId = Math.random().toString(8).substring(2)
         const html = `<a href='/login/${newId}'>login!</a>`
         res.setHeader('Content-Type', 'text/html')
-        res.end(html)
+        next(null, html)
       },
     }],
-    Route(['/logout', function logout (req, res, next) {
+    Route(['/logout', function logout (req, res, context, next) {
       res.setHeader('Set-Cookie', Cookie.serialize('id', '', { path: '/' }))
       res.setHeader('Location', '/whoami') // redirect to the whoami page
       res.statusCode = 303
@@ -40,17 +39,100 @@ const route = Route([
     }])
   ]),
   // check cookies, and authorize this connection (or not)
-  function authorize (req, res, next) {
-    req.id = Cookie.parse(req.headers.cookie).id || null
+  function authorize (req, res, context, next) {
+    context.id = Cookie.parse(req.headers.cookie).id || null
     next()
   },
   // return list of the current access rights. (for debugging)
-  Route('/whoami', function whoami (req, res, next) {
-    res.end(JSON.stringify(req.id) + '\n')
+  Route('/whoami', function whoami (req, res, context, next) {
+    res.setHeader('Content-Type', 'application/json')
+    next(null, context.id)
   })
 ])
 
-Server(Stack(route)).listen(5000)
+const finalHandler = (req, res) => (err, value) => {
+  if (err) {
+    console.error(err.stack)
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'text/plain')
+    res.end(err.stack + "\n")
+  } else if (value) {
+    res.statusCode = 200
+    if (typeof value === 'string') {
+      res.end(value)
+    } else {
+      res.end(JSON.stringify(value, null, 2) + "\n")
+    }
+  } else {
+    res.statusCode = 404
+    res.setHeader('Content-Type', 'text/plain')
+    res.end('Not Found\n')
+  }
+}
+
+Server((req, res) => {
+  routeHandler(req, res, {}, finalHandler(req, res))
+}).listen(5000)
+const routeHandler = Route([
+  Route([
+    // login and set cookies
+    ['/login/:id', function login (req, res, context, next) {
+      res.setHeader('Set-Cookie', Cookie.serialize('id', context.params.id, { path: '/' }))
+      res.setHeader('Location', '/whoami') // redirect to the whoami page.
+      res.statusCode = 303
+      res.end()
+    }],
+    // logout and clear cookies
+    ['/login', {
+      get: function view (req, res, context, next) {
+        const newId = Math.random().toString(8).substring(2)
+        const html = `<a href='/login/${newId}'>login!</a>`
+        res.setHeader('Content-Type', 'text/html')
+        next(null, html)
+      },
+    }],
+    Route(['/logout', function logout (req, res, context, next) {
+      res.setHeader('Set-Cookie', Cookie.serialize('id', '', { path: '/' }))
+      res.setHeader('Location', '/whoami') // redirect to the whoami page
+      res.statusCode = 303
+      res.end()
+    }])
+  ]),
+  // check cookies, and authorize this connection (or not)
+  function authorize (req, res, context, next) {
+    context.id = Cookie.parse(req.headers.cookie).id || null
+    next()
+  },
+  // return list of the current access rights. (for debugging)
+  Route('/whoami', function whoami (req, res, context, next) {
+    res.setHeader('Content-Type', 'application/json')
+    next(null, context.id)
+  })
+])
+
+const finalHandler = (req, res) => (err, value) => {
+  if (err) {
+    console.error(err.stack)
+    res.statusCode = 500
+    res.setHeader('Content-Type', 'text/plain')
+    res.end(err.stack + "\n")
+  } else if (value) {
+    res.statusCode = 200
+    if (typeof value === 'string') {
+      res.end(value)
+    } else {
+      res.end(JSON.stringify(value, null, 2) + "\n")
+    }
+  } else {
+    res.statusCode = 404
+    res.setHeader('Content-Type', 'text/plain')
+    res.end('Not Found\n')
+  }
+}
+
+Server((req, res) => {
+  routeHandler(req, res, {}, finalHandler(req, res))
+}).listen(5000)
 ```
 
 ## usage
@@ -63,9 +145,9 @@ Server(Stack(route)).listen(5000)
 
 where `path` is an Express-style path for [`path-to-regexp`](https://github.com/pillarjs/path-to-regexp)
 
-and `handler` is a function of shape `(req, res, next) => { next() }` for [`stack`](https://github.com/creationix/stack)
+and `handler` is a function of shape `(req, res, context, next) => { next(err, value) }` for [`http-compose`](https://github.com/ahdinosaur/http-compose)
 
-and `routeHandler` is a handler where `req.params` is an object of path matches and `req.url` is substring of original url after path match
+and `routeHandler` is a handler where `context.params` is an object of path matches and `context.url` is substring of original url after path match
 
 and `routeHandlers` is an object mapping [http method names](https://www.npmjs.com/package/methods) to route handler functions.
 

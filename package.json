@@ -4,7 +4,7 @@
   "description": "functional http router",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js",
+    "test": "tape test.js && standard",
     "start": "node-dev example"
   },
   "repository": {
@@ -22,12 +22,14 @@
     "cookie": "^0.3.1",
     "node-dev": "^3.1.0",
     "npm-run-all": "^1.6.0",
+    "standard": "^8.6.0",
     "tape": "^4.5.1"
   },
   "dependencies": {
+    "@f/zip-obj": "^1.1.1",
+    "http-compose": "^1.0.1",
     "path-to-regexp": "^1.5.3",
     "stack": "^0.1.0",
-    "xtend": "^4.0.1",
     "zip-object": "^0.1.0"
   }
 }
