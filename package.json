@@ -29,7 +29,6 @@
     "@f/zip-obj": "^1.1.1",
     "http-compose": "^1.0.1",
     "path-to-regexp": "^1.5.3",
-    "stack": "^0.1.0",
     "zip-object": "^0.1.0"
   }
 }
