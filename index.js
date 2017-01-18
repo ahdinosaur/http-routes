@@ -1,4 +1,5 @@
 const assign = Object.assign
+const Url = require('url')
 const compose = require('http-compose')
 const pathToRegexp = require('path-to-regexp')
 const zipObject = require('@f/zip-obj')
@@ -41,17 +42,24 @@ function mount (path, handler) {
   var keys = []
   const query = pathToRegexp(path, keys)
   return function (req, res, context, next) {
-    const url = context && context.url || req.url
-    const matches = query.exec(url)
+    var url = context && context.url ||
+      Url.parse(req.headers.host + req.url)
+
+    const matches = query.exec(url.pathname)
     if (matches === null) return next()
 
-    const nextUrl = req.url.substring(matches[0].length)
+    const nextPathname = url.pathname.substring(matches[0].length)
+    const nextUrl = Url.parse(Url.format(assign({}, url, {
+      pathname: '/' + nextPathname
+    })))
 
     const keyNames = keys.map(key => key.name)
-    const params = zipObject(keyNames, matches.slice(1))
+    const routeParams = zipObject(keyNames, matches.slice(1))
+    const nextParams = assign(context.params || {}, routeParams)
+
     const nextContext = assign({}, context, {
       url: nextUrl,
-      params: assign(context.params || {}, params)
+      params: nextParams
     })
 
     handler(req, res, nextContext, next)
