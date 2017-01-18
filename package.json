@@ -4,7 +4,10 @@
   "description": "functional http router",
   "main": "index.js",
   "scripts": {
-    "test": "tape test.js && standard",
+    "test": "npm run test:node && npm run test:deps && npm run test:lint",
+    "test:node": "tape test/*.js",
+    "test:lint": "standard",
+    "test:deps": "dependency-check . && dependency-check . --extra --no-dev",
     "start": "node-dev example"
   },
   "repository": {
@@ -20,6 +23,7 @@
   "homepage": "https://github.com/ahdinosaur/http-routes#readme",
   "devDependencies": {
     "cookie": "^0.3.1",
+    "dependency-check": "^2.7.0",
     "node-dev": "^3.1.0",
     "npm-run-all": "^1.6.0",
     "standard": "^8.6.0",
@@ -28,7 +32,6 @@
   "dependencies": {
     "@f/zip-obj": "^1.1.1",
     "http-compose": "^1.0.1",
-    "path-to-regexp": "^1.5.3",
-    "zip-object": "^0.1.0"
+    "path-to-regexp": "^1.5.3"
   }
 }
