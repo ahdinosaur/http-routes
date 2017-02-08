@@ -11,6 +11,7 @@ npm install --save http-routes
 ```js
 const Server = require('http').createServer
 const Cookie = require('cookie')
+const Send = require('http-sender')()
 const Route = require('http-routes')
 
 const routerHandler = Route([
@@ -50,28 +51,8 @@ const routerHandler = Route([
   })
 ])
 
-const finalHandler = (req, res) => (err, value) => {
-  if (err) {
-    console.error(err.stack)
-    res.statusCode = 500
-    res.setHeader('Content-Type', 'text/plain')
-    res.end(err.stack + '\n')
-  } else if (value) {
-    res.statusCode = 200
-    if (typeof value === 'string') {
-      res.end(value)
-    } else {
-      res.end(JSON.stringify(value, null, 2) + '\n')
-    }
-  } else {
-    res.statusCode = 404
-    res.setHeader('Content-Type', 'text/plain')
-    res.end('Not Found\n')
-  }
-}
-
 Server((req, res) => {
-  routerHandler(req, res, {}, finalHandler(req, res))
+  routerHandler(req, res, {}, Send(req, res))
 }).listen(5000)
 ```
 
