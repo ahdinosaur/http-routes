@@ -2,7 +2,7 @@ const Server = require('http').createServer
 const Cookie = require('cookie')
 const Route = require('./')
 
-const routeHandler = Route([
+const routerHandler = Route([
   Route([
     // login and set cookies
     ['/login/:id', function login (req, res, context, next) {
@@ -60,5 +60,5 @@ const finalHandler = (req, res) => (err, value) => {
 }
 
 Server((req, res) => {
-  routeHandler(req, res, {}, finalHandler(req, res))
+  routerHandler(req, res, {}, finalHandler(req, res))
 }).listen(5000)
